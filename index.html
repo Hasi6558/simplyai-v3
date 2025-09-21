@@ -61,101 +61,129 @@
     
     <!-- Favicon updater script -->
     <script>
+      // Debounce function to prevent rapid consecutive calls
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
+
       // Function to apply font settings from database
       function applyFontSettings(data) {
         if (!data) return;
         
-        const root = document.documentElement;
-        
-        // Apply font family
-        if (data.font_family) {
-          let fontStack = '';
+        try {
+          const root = document.documentElement;
           
-          switch(data.font_family) {
-            case 'poppins':
-              fontStack = '"Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-              break;
-            case 'roboto':
-              fontStack = '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-              break;
-            case 'inter':
-              fontStack = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-              break;
-            case 'lato':
-              fontStack = '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-              break;
-            case 'montserrat':
-              fontStack = '"Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-              break;
-            default:
-              fontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+          // Apply font family
+          if (data.font_family) {
+            let fontStack = '';
+            
+            switch(data.font_family) {
+              case 'poppins':
+                fontStack = '"Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                break;
+              case 'roboto':
+                fontStack = '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                break;
+              case 'inter':
+                fontStack = '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                break;
+              case 'lato':
+                fontStack = '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                break;
+              case 'montserrat':
+                fontStack = '"Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+                break;
+              default:
+                fontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            }
+            
+            root.style.setProperty('--font-family', fontStack);
+            document.body.style.fontFamily = fontStack;
+            
+            console.log('Font family applied:', data.font_family, '→', fontStack);
           }
           
-          root.style.setProperty('--font-family', fontStack);
-          document.body.style.fontFamily = fontStack;
-          
-          console.log('Font family applied:', data.font_family, '→', fontStack);
-        }
-        
-        // Apply font size
-        if (data.font_size) {
-          // Remove existing font size classes
-          document.body.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
-          
-          // Add new font size class
-          document.body.classList.add(`font-size-${data.font_size}`);
-          
-          // Set CSS custom property for font size
-          let baseFontSize = '16px'; // default
-          switch(data.font_size) {
-            case 'small':
-              baseFontSize = '14px';
-              break;
-            case 'medium':
-              baseFontSize = '16px';
-              break;
-            case 'large':
-              baseFontSize = '18px';
-              break;
+          // Apply font size
+          if (data.font_size) {
+            // Remove existing font size classes safely
+            document.body.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
+            
+            // Add new font size class
+            document.body.classList.add(`font-size-${data.font_size}`);
+            
+            // Set CSS custom property for font size
+            let baseFontSize = '16px'; // default
+            switch(data.font_size) {
+              case 'small':
+                baseFontSize = '14px';
+                break;
+              case 'medium':
+                baseFontSize = '16px';
+                break;
+              case 'large':
+                baseFontSize = '18px';
+                break;
+            }
+            
+            root.style.setProperty('--base-font-size', baseFontSize);
+            root.style.fontSize = baseFontSize;
+            
+            console.log('Font size applied:', data.font_size, '→', baseFontSize);
           }
           
-          root.style.setProperty('--base-font-size', baseFontSize);
-          root.style.fontSize = baseFontSize;
+          // Load Google Fonts if needed (with delay to prevent conflicts)
+          setTimeout(() => {
+            loadGoogleFonts(data.font_family);
+          }, 100);
           
-          console.log('Font size applied:', data.font_size, '→', baseFontSize);
+        } catch (error) {
+          console.error('Error applying font settings:', error);
         }
-        
-        // Load Google Fonts if needed
-        loadGoogleFonts(data.font_family);
       }
       
       // Function to load Google Fonts dynamically
       function loadGoogleFonts(fontFamily) {
-        if (!fontFamily || fontFamily === 'system') return;
-        
-        const fontMap = {
-          'poppins': 'Poppins:300,400,500,600,700',
-          'roboto': 'Roboto:300,400,500,700',
-          'inter': 'Inter:300,400,500,600,700',
-          'lato': 'Lato:300,400,700',
-          'montserrat': 'Montserrat:300,400,500,600,700'
-        };
-        
-        const googleFontFamily = fontMap[fontFamily];
-        if (!googleFontFamily) return;
-        
-        // Check if font is already loaded
-        const existingLink = document.querySelector(`link[href*="${googleFontFamily}"]`);
-        if (existingLink) return;
-        
-        // Create and append Google Fonts link
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = `https://fonts.googleapis.com/css2?family=${googleFontFamily}&display=swap`;
-        document.head.appendChild(link);
-        
-        console.log('Google Font loaded:', googleFontFamily);
+        try {
+          if (!fontFamily || fontFamily === 'system') return;
+          
+          const fontMap = {
+            'poppins': 'Poppins:300,400,500,600,700',
+            'roboto': 'Roboto:300,400,500,700',
+            'inter': 'Inter:300,400,500,600,700',
+            'lato': 'Lato:300,400,700',
+            'montserrat': 'Montserrat:300,400,500,600,700'
+          };
+          
+          const googleFontFamily = fontMap[fontFamily];
+          if (!googleFontFamily) return;
+          
+          // Check if font is already loaded
+          const existingLink = document.querySelector(`link[href*="${googleFontFamily}"]`);
+          if (existingLink) return;
+          
+          // Create and append Google Fonts link
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = `https://fonts.googleapis.com/css2?family=${googleFontFamily}&display=swap`;
+          document.head.appendChild(link);
+          
+          console.log('Google Font loaded:', googleFontFamily);
+        } catch (error) {
+          console.error('Error loading Google Fonts:', error);
+        }
       }
+      
+      // Debounced version of applyFontSettings to prevent rapid updates
+      const debouncedApplyFontSettings = debounce(applyFontSettings, 300);
+
       function getApiBaseUrl() {
         // Try to get from global config if available (set by main app)
         if (window.__APP_CONFIG__ && window.__APP_CONFIG__.API_BASE_URL) {
@@ -190,9 +218,9 @@
           .then(data => {
             console.log('Settings API response:', data);
             
-            // Apply font settings from database
+            // Apply font settings from database (debounced)
             if (data.success && data.data) {
-              applyFontSettings(data.data);
+              debouncedApplyFontSettings(data.data);
             }
             
             // Apply favicon if available
@@ -292,7 +320,7 @@
       window.addEventListener('fontSettingsUpdated', function(event) {
         console.log('Font settings update event received:', event.detail);
         if (event.detail && event.detail.fontSettings) {
-          applyFontSettings(event.detail.fontSettings);
+          debouncedApplyFontSettings(event.detail.fontSettings);
         }
       });
     </script>

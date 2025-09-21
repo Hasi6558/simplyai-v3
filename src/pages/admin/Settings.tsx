@@ -231,18 +231,20 @@ const Settings = () => {
         description: "Le impostazioni sono state aggiornate con successo",
       });
       
-      // Dispatch font settings update event
-      window.dispatchEvent(
-        new CustomEvent("fontSettingsUpdated", { 
-          detail: { 
-            fontSettings: {
-              font_family: data.fontFamily,
-              font_size: data.fontSize
+      // Dispatch font settings update event (debounced to prevent rapid firing)
+      setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent("fontSettingsUpdated", { 
+            detail: { 
+              fontSettings: {
+                font_family: data.fontFamily,
+                font_size: data.fontSize
+              }
             }
-          }
-        })
-      );
-      console.log("Font settings updated, dispatched fontSettingsUpdated event");
+          })
+        );
+        console.log("Font settings updated, dispatched fontSettingsUpdated event");
+      }, 100);
     } catch (error) {
       console.error("Error saving settings:", error);
       toast({
@@ -760,18 +762,20 @@ const Settings = () => {
                                 "Le impostazioni di Aspetto sono state aggiornate tramite il Test Button.",
                             });
                             
-                            // Dispatch font settings update event
-                            window.dispatchEvent(
-                              new CustomEvent("fontSettingsUpdated", { 
-                                detail: { 
-                                  fontSettings: {
-                                    font_family: values.fontFamily,
-                                    font_size: values.fontSize
+                            // Dispatch font settings update event (debounced)
+                            setTimeout(() => {
+                              window.dispatchEvent(
+                                new CustomEvent("fontSettingsUpdated", { 
+                                  detail: { 
+                                    fontSettings: {
+                                      font_family: values.fontFamily,
+                                      font_size: values.fontSize
+                                    }
                                   }
-                                }
-                              })
-                            );
-                            console.log("Font settings updated from appearance form");
+                                })
+                              );
+                              console.log("Font settings updated from appearance form");
+                            }, 100);
                           } catch (error) {
                             toast({
                               title: "Errore",
