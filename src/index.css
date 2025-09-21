@@ -55,6 +55,10 @@
     --sidebar-accent-foreground: 260 10% 10%;
     --sidebar-border: 260 20% 85%;
     --sidebar-ring: 260 80% 75%;
+
+    /* Dynamic font family variable - can be updated from settings */
+    --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --base-font-size: 16px;
   }
 
   .dark {
@@ -103,7 +107,9 @@
   }
 
   body {
-    @apply bg-background text-foreground font-poppins;
+    @apply bg-background text-foreground;
+    font-family: var(--font-family) !important;
+    font-size: var(--base-font-size, 16px);
   }
 
   h1,
@@ -112,7 +118,8 @@
   h4,
   h5,
   h6 {
-    @apply font-poppins font-semibold;
+    font-family: var(--font-family) !important;
+    @apply font-semibold;
   }
 
   .btn-gradient {
