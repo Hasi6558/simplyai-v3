@@ -238,7 +238,8 @@ const Settings = () => {
             detail: { 
               fontSettings: {
                 font_family: data.fontFamily,
-                font_size: data.fontSize
+                font_size: data.fontSize,
+                button_style: data.buttonStyle
               }
             }
           })
@@ -769,7 +770,8 @@ const Settings = () => {
                                   detail: { 
                                     fontSettings: {
                                       font_family: values.fontFamily,
-                                      font_size: values.fontSize
+                                      font_size: values.fontSize,
+                                      button_style: values.buttonStyle
                                     }
                                   }
                                 })

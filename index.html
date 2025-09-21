@@ -42,6 +42,98 @@
       body, html, div, p, span, h1, h2, h3, h4, h5, h6, a, button, input, textarea, select {
         font-family: inherit !important;
       }
+      
+      /* Button Style Classes */
+      
+      /* Pill Style - Very rounded */
+      .button-style-pill button,
+      .button-style-pill .btn,
+      .button-style-pill input[type="button"],
+      .button-style-pill input[type="submit"],
+      .button-style-pill [role="button"] {
+        border-radius: 50px !important;
+      }
+      
+      /* Rounded Style - Medium rounded corners */
+      .button-style-rounded button,
+      .button-style-rounded .btn,
+      .button-style-rounded input[type="button"],
+      .button-style-rounded input[type="submit"],
+      .button-style-rounded [role="button"] {
+        border-radius: 8px !important;
+      }
+      
+      /* Square Style - No rounded corners */
+      .button-style-square button,
+      .button-style-square .btn,
+      .button-style-square input[type="button"],
+      .button-style-square input[type="submit"],
+      .button-style-square [role="button"] {
+        border-radius: 0px !important;
+      }
+      
+      /* Apply to common UI component classes */
+      .button-style-pill .Button,
+      .button-style-pill .button,
+      .button-style-pill .ui-button {
+        border-radius: 50px !important;
+      }
+      
+      .button-style-rounded .Button,
+      .button-style-rounded .button,
+      .button-style-rounded .ui-button {
+        border-radius: 8px !important;
+      }
+      
+      .button-style-square .Button,
+      .button-style-square .button,
+      .button-style-square .ui-button {
+        border-radius: 0px !important;
+      }
+      
+      /* Apply to form inputs and select elements too */
+      .button-style-pill input[type="text"],
+      .button-style-pill input[type="email"],
+      .button-style-pill input[type="password"],
+      .button-style-pill select,
+      .button-style-pill textarea {
+        border-radius: 25px !important;
+      }
+      
+      .button-style-rounded input[type="text"],
+      .button-style-rounded input[type="email"],
+      .button-style-rounded input[type="password"],
+      .button-style-rounded select,
+      .button-style-rounded textarea {
+        border-radius: 6px !important;
+      }
+      
+      .button-style-square input[type="text"],
+      .button-style-square input[type="email"],
+      .button-style-square input[type="password"],
+      .button-style-square select,
+      .button-style-square textarea {
+        border-radius: 0px !important;
+      }
+      
+      /* Apply to card and panel components */
+      .button-style-pill .card,
+      .button-style-pill .panel,
+      .button-style-pill .modal {
+        border-radius: 20px !important;
+      }
+      
+      .button-style-rounded .card,
+      .button-style-rounded .panel,
+      .button-style-rounded .modal {
+        border-radius: 12px !important;
+      }
+      
+      .button-style-square .card,
+      .button-style-square .panel,
+      .button-style-square .modal {
+        border-radius: 0px !important;
+      }
     </style>
 
     <meta property="og:title" content="simolyai-report-craft" />
@@ -137,6 +229,20 @@
             root.style.fontSize = baseFontSize;
             
             console.log('Font size applied:', data.font_size, '→', baseFontSize);
+          }
+          
+          // Apply button style
+          if (data.button_style) {
+            // Remove existing button style classes
+            document.body.classList.remove('button-style-pill', 'button-style-rounded', 'button-style-square');
+            
+            // Add new button style class
+            document.body.classList.add(`button-style-${data.button_style}`);
+            
+            // Set CSS custom property for button style
+            root.style.setProperty('--button-style', data.button_style);
+            
+            console.log('Button style applied:', data.button_style);
           }
           
           // Load Google Fonts if needed (with delay to prevent conflicts)

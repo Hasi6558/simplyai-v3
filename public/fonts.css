@@ -9,6 +9,7 @@
 :root {
   --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --base-font-size: 16px;
+  --button-style: 'rounded';
 }
 
 /* Ensure all elements inherit the font family */
@@ -27,6 +28,57 @@
 
 .font-size-large {
   font-size: 18px !important;
+}
+
+/* Button Style Classes */
+
+/* Pill Style - Very rounded */
+.button-style-pill button,
+.button-style-pill .btn,
+.button-style-pill input[type="button"],
+.button-style-pill input[type="submit"] {
+  border-radius: 50px !important;
+}
+
+/* Rounded Style - Medium rounded corners */
+.button-style-rounded button,
+.button-style-rounded .btn,
+.button-style-rounded input[type="button"],
+.button-style-rounded input[type="submit"] {
+  border-radius: 8px !important;
+}
+
+/* Square Style - No rounded corners */
+.button-style-square button,
+.button-style-square .btn,
+.button-style-square input[type="button"],
+.button-style-square input[type="submit"] {
+  border-radius: 0px !important;
+}
+
+/* Apply to form inputs and selects too */
+.button-style-pill input[type="text"],
+.button-style-pill input[type="email"],
+.button-style-pill input[type="password"],
+.button-style-pill select,
+.button-style-pill textarea {
+  border-radius: 25px !important;
+}
+
+.button-style-rounded input[type="text"],
+.button-style-rounded input[type="email"],
+.button-style-rounded input[type="password"],
+.button-style-rounded select,
+.button-style-rounded textarea {
+  border-radius: 6px !important;
+}
+
+.button-style-square input[type="text"],
+.button-style-square input[type="email"],
+.button-style-square input[type="password"],
+.button-style-square select,
+.button-style-square textarea {
+  border-radius: 0px !important;
 }
 
 /* Responsive font scaling */
