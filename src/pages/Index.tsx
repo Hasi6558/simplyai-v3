@@ -5,8 +5,10 @@ import { ArrowRight } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import PricingTable from '@/components/PricingTable';
 import { Card, CardContent } from '@/components/ui/card';
+import { useSettings } from '@/contexts/SettingsContext';
 
 const Index = () => {
+  const { settings } = useSettings();
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -195,7 +197,25 @@ const Index = () => {
           <div>
             <h4 className="font-semibold mb-4">Contatti</h4>
             <ul className="space-y-2">
-              <li className="text-sm opacity-80">info@simolyai.com</li>
+              <li className="text-sm opacity-80">
+                {settings?.site_url ? (
+                  <a 
+                    href={settings.site_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="hover:opacity-100 transition-opacity"
+                  >
+                    {settings.site_url}
+                  </a>
+                ) : (
+                  <a 
+                    href={`mailto:${settings?.contact_email || 'info@simolyai.com'}`}
+                    className="hover:opacity-100 transition-opacity"
+                  >
+                    {settings?.contact_email || 'info@simolyai.com'}
+                  </a>
+                )}
+              </li>
               <li className="text-sm opacity-80">+39 123 456 7890</li>
             </ul>
           </div>

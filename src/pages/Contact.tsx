@@ -6,11 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { fetchPageData, savePageData } from "@/services/pagesService";
+import { useSettings } from "@/contexts/SettingsContext";
 
 // Define the Page type
 type Page = { id: string; title: string; content: string };
 
 const Contact = () => {
+  const { settings } = useSettings();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -70,7 +72,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-lg mb-1">Email</h3>
-                  <p className="text-gray-600">info@simolyai.com</p>
+                  <p className="text-gray-600">{settings?.contact_email || 'info@simolyai.com'}</p>
                 </div>
               </div>
             </div>

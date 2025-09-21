@@ -30,6 +30,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import Guide from "./pages/Guide";
 import { Toaster } from "./components/ui/toaster";
 import { AuthProvider } from "./contexts/AuthContext";
+import { SettingsProvider } from "./contexts/SettingsContext";
 import PagePreview from "./pages/PagePreview";
 import Report from "./pages/Report";
 import FormEditorPage from "./components/form-builder/FormEditorPage";
@@ -86,7 +87,8 @@ const App = () => {
   }, []);
   return (
     <Router>
-      <AuthProvider>
+      <SettingsProvider>
+        <AuthProvider>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -274,6 +276,7 @@ const App = () => {
         </Routes>
         <Toaster />
       </AuthProvider>
+      </SettingsProvider>
     </Router>
   );
 };
