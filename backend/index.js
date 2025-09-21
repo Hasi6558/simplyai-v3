@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import passport from "./config/passport.js";
 import authRoutes from "./routes/auth.js";
@@ -54,6 +55,25 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Serve public files (logos, favicons) statically
 app.use(express.static(path.join(__dirname, "../public")));
+
+// Special handling for favicon.ico with no-cache headers
+app.get('/favicon.ico', (req, res) => {
+  const faviconPath = path.join(__dirname, '../public/favicon.ico');
+  
+  // Set headers to prevent aggressive caching
+  res.set({
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Content-Type': 'image/x-icon'
+  });
+  
+  if (fs.existsSync(faviconPath)) {
+    res.sendFile(faviconPath);
+  } else {
+    res.status(404).send('Favicon not found');
+  }
+});
 
 // Image upload route for page Editor
 app.use("/api/upload", imageUpload);

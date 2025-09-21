@@ -142,6 +142,17 @@ router.post('/favicon', logoUpload.single('file'), async (req, res) => {
     const host = req.get('host') || 'localhost:4000';
     const fileUrl = `${protocol}://${host}/${req.file.filename}`;
     
+    // Also create a copy as favicon.ico for browser fallback
+    const faviconPath = path.join(__dirname, '../../public/favicon.ico');
+    try {
+      // Copy the uploaded file to favicon.ico
+      fs.copyFileSync(req.file.path, faviconPath);
+      console.log('Favicon also saved as favicon.ico for browser fallback');
+    } catch (copyError) {
+      console.error('Error creating favicon.ico copy:', copyError);
+      // Continue anyway, main upload still works
+    }
+    
     // Update database with new favicon path
     try {
       await pool.execute(

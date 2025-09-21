@@ -208,6 +208,12 @@ const Settings = () => {
   const handleFaviconUpload = (imageUrl: string) => {
     form.setValue("favicon", imageUrl);
     setFaviconUrl(imageUrl);
+    
+    // Dispatch custom event to notify about favicon update
+    window.dispatchEvent(
+      new CustomEvent("faviconUpdated", { detail: { faviconUrl: imageUrl } })
+    );
+    console.log("Favicon updated, dispatched faviconUpdated event");
   };
 
   // Save settings

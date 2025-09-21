@@ -6,6 +6,7 @@
     <title>simolyai-report-craft</title>
     <meta name="description" content="Lovable Generated Project" />
     <meta name="author" content="Lovable" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" id="favicon-link" />
 
     <meta property="og:title" content="simolyai-report-craft" />
     <meta property="og:description" content="Lovable Generated Project" />
@@ -21,6 +22,136 @@
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    
+    <!-- Favicon updater script -->
+    <script>
+      // Function to get API base URL from the app's config
+      function getApiBaseUrl() {
+        // Try to get from global config if available (set by main app)
+        if (window.__APP_CONFIG__ && window.__APP_CONFIG__.API_BASE_URL) {
+          return window.__APP_CONFIG__.API_BASE_URL;
+        }
+        
+        // If no global config available, we can't determine the API URL
+        // This should not happen in normal operation since main.tsx sets it
+        console.warn('No API base URL configuration found. Please ensure the React app has loaded properly.');
+        return null;
+      }
+
+      // Function to update favicon
+      function updateFavicon() {
+        const API_BASE_URL = getApiBaseUrl();
+        
+        if (!API_BASE_URL) {
+          console.error('Cannot update favicon: API base URL not available');
+          return;
+        }
+        
+        console.log('Favicon updater - Using API_BASE_URL:', API_BASE_URL);
+        
+        fetch(`${API_BASE_URL}/settings`)
+          .then(response => {
+            console.log('Settings API response status:', response.status);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Settings API response:', data);
+            if (data.success && data.data && data.data.favicon) {
+              const faviconLink = document.getElementById('favicon-link');
+              if (faviconLink) {
+                // Add timestamp to force browser refresh
+                const timestamp = Date.now();
+                const newFaviconUrl = `${data.data.favicon}?v=${timestamp}`;
+                
+                // Determine the correct MIME type based on file extension
+                const fileExtension = data.data.favicon.split('.').pop().toLowerCase();
+                let mimeType = 'image/x-icon'; // default
+                
+                if (fileExtension === 'png') {
+                  mimeType = 'image/png';
+                } else if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
+                  mimeType = 'image/jpeg';
+                } else if (fileExtension === 'svg') {
+                  mimeType = 'image/svg+xml';
+                } else if (fileExtension === 'gif') {
+                  mimeType = 'image/gif';
+                } else if (fileExtension === 'webp') {
+                  mimeType = 'image/webp';
+                }
+                
+                // Update the favicon link
+                faviconLink.href = newFaviconUrl;
+                faviconLink.type = mimeType;
+                
+                console.log('Favicon updated to:', newFaviconUrl, 'with type:', mimeType);
+                
+                // Force favicon refresh by removing and re-adding the link
+                const head = document.head;
+                head.removeChild(faviconLink);
+                setTimeout(() => {
+                  head.appendChild(faviconLink);
+                }, 100);
+              } else {
+                console.error('Favicon link element not found');
+              }
+            } else {
+              console.log('No custom favicon found in settings, using default');
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching favicon from settings:', error);
+          });
+      }
+
+      // Update favicon on page load (with delay to ensure app config is loaded)
+      document.addEventListener('DOMContentLoaded', () => {
+        // Wait for React app to load and set global config
+        setTimeout(updateFavicon, 500);
+      });
+      
+      // Listen for favicon update events from admin settings
+      window.addEventListener('faviconUpdated', function(event) {
+        console.log('Favicon update event received:', event.detail);
+        const faviconLink = document.getElementById('favicon-link');
+        if (faviconLink && event.detail && event.detail.faviconUrl) {
+          const timestamp = Date.now();
+          const newFaviconUrl = `${event.detail.faviconUrl}?v=${timestamp}`;
+          
+          // Determine the correct MIME type based on file extension
+          const fileExtension = event.detail.faviconUrl.split('.').pop().toLowerCase();
+          let mimeType = 'image/x-icon'; // default
+          
+          if (fileExtension === 'png') {
+            mimeType = 'image/png';
+          } else if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
+            mimeType = 'image/jpeg';
+          } else if (fileExtension === 'svg') {
+            mimeType = 'image/svg+xml';
+          } else if (fileExtension === 'gif') {
+            mimeType = 'image/gif';
+          } else if (fileExtension === 'webp') {
+            mimeType = 'image/webp';
+          }
+          
+          // Update the favicon link
+          faviconLink.href = newFaviconUrl;
+          faviconLink.type = mimeType;
+          
+          console.log('Favicon updated via event to:', newFaviconUrl, 'with type:', mimeType);
+          
+          // Force favicon refresh by removing and re-adding the link
+          const head = document.head;
+          head.removeChild(faviconLink);
+          setTimeout(() => {
+            head.appendChild(faviconLink);
+          }, 100);
+        }
+      });
+    </script>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
