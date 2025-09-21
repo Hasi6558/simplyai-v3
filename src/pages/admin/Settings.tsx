@@ -230,6 +230,19 @@ const Settings = () => {
         title: "Impostazioni salvate",
         description: "Le impostazioni sono state aggiornate con successo",
       });
+      
+      // Dispatch font settings update event
+      window.dispatchEvent(
+        new CustomEvent("fontSettingsUpdated", { 
+          detail: { 
+            fontSettings: {
+              font_family: data.fontFamily,
+              font_size: data.fontSize
+            }
+          }
+        })
+      );
+      console.log("Font settings updated, dispatched fontSettingsUpdated event");
     } catch (error) {
       console.error("Error saving settings:", error);
       toast({
@@ -746,6 +759,19 @@ const Settings = () => {
                               description:
                                 "Le impostazioni di Aspetto sono state aggiornate tramite il Test Button.",
                             });
+                            
+                            // Dispatch font settings update event
+                            window.dispatchEvent(
+                              new CustomEvent("fontSettingsUpdated", { 
+                                detail: { 
+                                  fontSettings: {
+                                    font_family: values.fontFamily,
+                                    font_size: values.fontSize
+                                  }
+                                }
+                              })
+                            );
+                            console.log("Font settings updated from appearance form");
                           } catch (error) {
                             toast({
                               title: "Errore",
