@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -66,21 +66,21 @@ const ChatGPTIntegration = () => {
   const [loading, setLoading] = useState(true);
   const [activeProvider, setActiveProvider] = useState<string>('openai');
   const [showProviderDialog, setShowProviderDialog] = useState(false);
-  const [newProvider, setNewProvider] = useState<Partial<AIProvider>>({
+  const [editModelIndex, setEditModelIndex] = useState<number | null>(null);
+  const [newProvider, setNewProvider] = useState<Partial<AIProvider>>(() => ({
     name: '',
     isEnabled: true,
     defaultModel: '',
     models: [],
     maxTokens: 2000,
     temperature: 0.7
-  });
-  const [editModelIndex, setEditModelIndex] = useState<number | null>(null);
-  const [modelDetails, setModelDetails] = useState({
+  }));
+  const [modelDetails, setModelDetails] = useState(() => ({
     id: '',
     name: '',
     description: '',
     maxTokens: 2000
-  });
+  }));
   
   // Elenco dei provider AI disponibili
   const [aiProviders, setAiProviders] = useState<AIProvider[]>([
@@ -152,30 +152,40 @@ const ChatGPTIntegration = () => {
   });
 
   // Carica i piani e il conteggio dei prompt
-  useEffect(() => {
-    const loadPlansAndPrompts = async () => {
-      try {
-        setLoading(true);
-        const plansData = await fetchPlans();
-        setPlans(plansData);
-        
-        // Carica il conteggio dei prompt per ogni piano
-        const promptCountsData: Record<string, number> = {};
-        for (const plan of plansData) {
+  const loadPlansAndPrompts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const plansData = await fetchPlans();
+      setPlans(plansData);
+      
+      // Carica il conteggio dei prompt per ogni piano
+      const promptCountsData: Record<string, number> = {};
+      for (const plan of plansData) {
+        try {
           const templates = await fetchPlanPromptTemplates(plan.id);
           promptCountsData[plan.id] = templates.length;
+        } catch (error) {
+          console.warn(`Error loading prompts for plan ${plan.id}:`, error);
+          promptCountsData[plan.id] = 0;
         }
-        
-        setPromptCounts(promptCountsData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Errore nel caricamento dei dati:', error);
-        setLoading(false);
       }
-    };
-    
+      
+      setPromptCounts(promptCountsData);
+    } catch (error) {
+      console.error('Errore nel caricamento dei dati:', error);
+      toast({
+        title: "Errore",
+        description: "Errore nel caricamento dei dati. Riprova più tardi.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
     loadPlansAndPrompts();
-  }, []);
+  }, [loadPlansAndPrompts]);
 
   const handleSaveProvider = () => {
     setSaving(true);
@@ -478,110 +488,117 @@ const ChatGPTIntegration = () => {
             </div>
             
             <div className="col-span-1 lg:col-span-3">
-              {aiProviders.map(provider => provider.id === activeProvider && (
-                <Card key={provider.id}>
-                  <CardHeader>
-                    <CardTitle>Configurazione {provider.name}</CardTitle>
-                    <CardDescription>
-                      Configura i parametri per l'integrazione con {provider.name}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor={`enable-${provider.id}`}>Abilita {provider.name}</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Attiva l'integrazione con l'API di {provider.name}
-                        </p>
+              {(() => {
+                const currentProvider = aiProviders.find(provider => provider.id === activeProvider);
+                if (!currentProvider) return null;
+                
+                return (
+                  <Card key={`config-${currentProvider.id}`}>
+                    <CardHeader>
+                      <CardTitle>Configurazione {currentProvider.name}</CardTitle>
+                      <CardDescription>
+                        Configura i parametri per l'integrazione con {currentProvider.name}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor={`enable-${currentProvider.id}`}>Abilita {currentProvider.name}</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Attiva l'integrazione con l'API di {currentProvider.name}
+                          </p>
+                        </div>
+                        <Switch
+                          id={`enable-${currentProvider.id}`}
+                          checked={currentProvider.isEnabled}
+                          onCheckedChange={(checked) => handleToggleProvider(currentProvider.id, checked)}
+                        />
                       </div>
-                      <Switch
-                        id={`enable-${provider.id}`}
-                        checked={provider.isEnabled}
-                        onCheckedChange={(checked) => handleToggleProvider(provider.id, checked)}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor={`api-key-${provider.id}`}>API Key</Label>
-                      <Input
-                        id={`api-key-${provider.id}`}
-                        type="password"
-                        value={provider.apiKey || ''}
-                        onChange={(e) => handleUpdateApiKey(e.target.value)}
-                        placeholder={`Inserisci la tua ${provider.name} API Key`}
-                        className="font-mono"
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        La tua chiave API di {provider.name}. Sarà salvata in modo sicuro.
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor={`model-${provider.id}`}>Modello</Label>
-                      <Select
-                        value={provider.defaultModel}
-                        onValueChange={(value) => handleUpdateModel(value)}
-                      >
-                        <SelectTrigger id={`model-${provider.id}`}>
-                          <SelectValue placeholder="Seleziona un modello" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {provider.models.map(model => (
-                            <SelectItem key={model.id} value={model.id}>{model.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-sm text-muted-foreground">
-                        Il modello di {provider.name} da utilizzare per generare i report.
-                      </p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
                       <div className="space-y-2">
-                        <Label htmlFor={`max-tokens-${provider.id}`}>Lunghezza Massima (token)</Label>
+                        <Label htmlFor={`api-key-${currentProvider.id}`}>API Key</Label>
                         <Input
-                          id={`max-tokens-${provider.id}`}
-                          type="number"
-                          value={provider.maxTokens}
-                          onChange={(e) => handleUpdateMaxTokens(parseInt(e.target.value))}
+                          id={`api-key-${currentProvider.id}`}
+                          type="password"
+                          value={currentProvider.apiKey || ''}
+                          onChange={(e) => handleUpdateApiKey(e.target.value)}
+                          placeholder={`Inserisci la tua ${currentProvider.name} API Key`}
+                          className="font-mono"
                         />
                         <p className="text-sm text-muted-foreground">
-                          Limita la lunghezza massima del output generato
+                          La tua chiave API di {currentProvider.name}. Sarà salvata in modo sicuro.
                         </p>
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor={`temperature-${provider.id}`}>Temperatura</Label>
-                        <Input
-                          id={`temperature-${provider.id}`}
-                          type="number"
-                          min="0"
-                          max="1"
-                          step="0.1"
-                          value={provider.temperature}
-                          onChange={(e) => handleUpdateTemperature(parseFloat(e.target.value))}
-                        />
+                        <Label htmlFor={`model-${currentProvider.id}`}>Modello</Label>
+                        <Select
+                          value={currentProvider.defaultModel}
+                          onValueChange={(value) => handleUpdateModel(value)}
+                        >
+                          <SelectTrigger id={`model-${currentProvider.id}`}>
+                            <SelectValue placeholder="Seleziona un modello" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {currentProvider.models.map(model => (
+                              <SelectItem key={`${currentProvider.id}-${model.id}`} value={model.id}>
+                                {model.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <p className="text-sm text-muted-foreground">
-                          Controlla la casualità dell'output (0 = deterministico, 1 = creativo)
+                          Il modello di {currentProvider.name} da utilizzare per generare i report.
                         </p>
                       </div>
-                    </div>
-                    
-                    <Button
-                      className="mt-4"
-                      variant="outline"
-                      onClick={handleTestConnection}
-                    >
-                      Testa connessione
-                    </Button>
-                  </CardContent>
-                  <CardFooter>
-                    <Button onClick={handleSaveProvider} disabled={saving}>
-                      {saving ? 'Salvando...' : 'Salva Configurazione'}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor={`max-tokens-${currentProvider.id}`}>Lunghezza Massima (token)</Label>
+                          <Input
+                            id={`max-tokens-${currentProvider.id}`}
+                            type="number"
+                            value={currentProvider.maxTokens}
+                            onChange={(e) => handleUpdateMaxTokens(parseInt(e.target.value) || 0)}
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Limita la lunghezza massima del output generato
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor={`temperature-${currentProvider.id}`}>Temperatura</Label>
+                          <Input
+                            id={`temperature-${currentProvider.id}`}
+                            type="number"
+                            min="0"
+                            max="1"
+                            step="0.1"
+                            value={currentProvider.temperature}
+                            onChange={(e) => handleUpdateTemperature(parseFloat(e.target.value) || 0)}
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Controlla la casualità dell'output (0 = deterministico, 1 = creativo)
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <Button
+                        className="mt-4"
+                        variant="outline"
+                        onClick={handleTestConnection}
+                      >
+                        Testa connessione
+                      </Button>
+                    </CardContent>
+                    <CardFooter>
+                      <Button onClick={handleSaveProvider} disabled={saving}>
+                        {saving ? 'Salvando...' : 'Salva Configurazione'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })()}
             </div>
           </div>
         </TabsContent>
@@ -737,8 +754,8 @@ const ChatGPTIntegration = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {plans.map(plan => (
-                    <div key={plan.id} className="border rounded-lg p-4 hover:border-primary transition-colors">
+                  {Array.isArray(plans) && plans.map(plan => (
+                    <div key={`plan-${plan.id}`} className="border rounded-lg p-4 hover:border-primary transition-colors">
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-lg font-medium">{plan.name}</h3>
@@ -758,7 +775,7 @@ const ChatGPTIntegration = () => {
                     </div>
                   ))}
                   
-                  {plans.length === 0 && (
+                  {(!Array.isArray(plans) || plans.length === 0) && (
                     <div className="text-center py-6">
                       <p className="text-muted-foreground">Nessun piano di abbonamento disponibile</p>
                       <Button 
@@ -860,8 +877,8 @@ const ChatGPTIntegration = () => {
               <div className="border rounded-md p-3">
                 {newProvider.models && newProvider.models.length > 0 ? (
                   <div className="space-y-2">
-                    {newProvider.models.map((model, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 rounded-md bg-accent/30">
+                    {newProvider.models && newProvider.models.map((model, index) => (
+                      <div key={`new-model-${index}-${model.id}`} className="flex items-center justify-between p-2 rounded-md bg-accent/30">
                         <div>
                           <p className="font-medium">{model.name}</p>
                           <p className="text-xs text-muted-foreground">{model.id} · {model.maxTokens || 2000} token</p>

@@ -64,7 +64,9 @@ const UserDashboard = () => {
       }
     };
 
-    loadSettings();
+    if (user) {
+      loadSettings();
+    }
 
     // Gestione responsive
     const handleResize = () => {
