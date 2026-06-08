@@ -1,6 +1,6 @@
 # SimplyAI
 
-SimplyAI is a full-stack SaaS platform that enables businesses to collect structured data through AI-powered questionnaires and automatically generate personalised analytical reports using GPT-4. Administrators configure subscription plans and assign questionnaires to each plan. Users sign up, complete their assigned questionnaires, and receive AI-generated reports based on their responses. The platform supports free and paid tiers, Stripe-powered payments, social OAuth login, and a rich admin panel for managing every aspect of the system.
+SimplyAI is a full-stack SaaS platform that enables businesses to collect structured data through AI-powered questionnaires and automatically generate personalised analytical reports using GPT-4. Administrators configure subscription plans and assign questionnaires to each plan. Users sign up, complete their assigned questionnaires, and receive AI-generated reports based on their responses. The platform supports free and paid tiers, Stripe-powered payments, social OAuth login, and a rich admin panel for managing every aspect of the system. 
 
 ## Main Functionalities
 
